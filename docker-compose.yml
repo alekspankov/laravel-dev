@@ -1,0 +1,48 @@
+version: "3.8"
+services:
+  db:
+    # MySQL
+    image: mysql
+    command: --authentication-policy=mysql_native_password
+    restart: always
+    container_name: db
+    environment:
+      MYSQL_ROOT_PASSWORD: docker
+      MYSQL_DB: mysqldb
+    ports: # You can skip this if you don't need to access mysql instance directly from the host
+      - 3306:3306
+    volumes:
+      - mysql-data:/var/lib/mysql
+
+  adminer:
+    # Adminer
+    image: adminer
+    restart: always
+    depends_on:
+      - db
+    ports:
+      - 8080:8080
+
+  app:
+    # Your laravel app
+    image: aleksxp/laravel-dev:8.0 # Check the correct version tag
+    working_dir: /app
+    restart: always
+    command:
+      - /bin/bash
+      - -c
+      - |
+        npm -g i npm
+        cd /app && composer update -vvv && php artisan cache:clear && php artisan config:clear
+        /entrypoint supervisord
+    container_name: app # Change this to your own name
+    volumes:
+      - ./..:/app
+    depends_on:
+      - db
+    environment:
+      WEB_DOCUMENT_ROOT: /app/public # This is a setting for laravel. You might have to change it
+    ports:
+      - "8080:80"
+volumes:
+  mysql-data:
