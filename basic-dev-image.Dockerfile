@@ -1,4 +1,4 @@
-FROM webdevops/php-nginx-dev:8.0
+FROM webdevops/php-nginx-dev:7.4
 COPY --from=mlocati/php-extension-installer /usr/bin/install-php-extensions /usr/local/bin/
 
 RUN apt-get update && apt-get upgrade -y && \
