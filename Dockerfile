@@ -1,4 +1,7 @@
-FROM webdevops/php-nginx-dev:7.4
+FROM webdevops/php-nginx-dev:8.1
+
+ARG TARGETPLATFORM
+
 COPY --from=mlocati/php-extension-installer /usr/bin/install-php-extensions /usr/local/bin/
 
 RUN apt-get update && apt-get upgrade -y && \
@@ -22,8 +25,9 @@ RUN apt-get update && apt-get upgrade -y && \
         g++ \
         nodejs \
         poppler-utils && \
-    rm -rf /var/lib/apt/lists/*s && \
-    install-php-extensions \
+    rm -rf /var/lib/apt/lists/*s 
+    # && \
+RUN install-php-extensions \
         http \
         bz2 \
         intl \
@@ -32,8 +36,10 @@ RUN apt-get update && apt-get upgrade -y && \
         calendar \
         pdo_mysql \
         zip \
-        @composer && \
-    docker-service-enable cron
+        @composer 
+
+        # && \
+# RUN docker-service-enable cron
 
 ENV PHP_MEMORY_LIMIT=256M
 ENV PHP_MAX_EXECUTION_TIME=300
@@ -52,3 +58,15 @@ ENV XDEBUG_IDE_KEY=docker
 ENV XDEBUG_SESSION=docker
 
 WORKDIR /app
+
+RUN echo "${TARGETPLATFORM}" && \
+    if [ "${TARGETPLATFORM}" = "linux/arm64" ]; then \
+        echo "M1" && \
+        wget -O "/usr/local/bin/go-replace" "https://github.com/webdevops/goreplace/releases/download/1.1.2/gr-arm64-linux" \
+            && chmod +x "/usr/local/bin/go-replace" \
+            && "/usr/local/bin/go-replace" --version ; \
+    fi 
+
+ENV ARCH=${TARGETPLATFORM}
+    
+EXPOSE 80
