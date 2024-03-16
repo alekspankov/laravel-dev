@@ -25,7 +25,7 @@ services:
 
   app:
     # Your laravel app
-    image: aleksxp/laravel-dev:8.0 # Check the correct version tag
+    image: aleksxp/laravel-dev:8.2 # Check the correct version tag
     working_dir: /app
     restart: always
     command:
